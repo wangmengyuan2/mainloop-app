@@ -30,6 +30,7 @@ static void cfd_callback(int cfd, uint32_t events, void *user_data)
 	} else 
 			write(cfd, buf, n);
 }
+
 static void lfd_callback(int lfd, uint32_t events, void *user_data)
 {
 	int cfd;
@@ -46,6 +47,17 @@ static void lfd_callback(int lfd, uint32_t events, void *user_data)
 	mainloop_add_fd(cfd, EPOLLIN, cfd_callback, NULL, NULL);
 }
 
+static void stdin_callback(int fd, uint32_t events, void *user_data)
+{
+	int n;
+	uint8_t buf[BUF_SIZE];
+
+	bzero(buf, BUF_SIZE);
+	n = read(fd, buf, BUF_SIZE);
+
+	if(!strncmp("quit",buf, 4))
+					mainloop_quit();
+}
 
 int main()
 {
@@ -85,5 +97,6 @@ int main()
 	}
 	mainloop_init();
 	mainloop_add_fd(lfd, EPOLLIN, lfd_callback, NULL, NULL);
+	mainloop_add_fd(0, EPOLLIN, stdin_callback, NULL, NULL);
 	mainloop_run();
 }
